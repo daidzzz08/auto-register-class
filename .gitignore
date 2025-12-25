@@ -1,0 +1,25 @@
+Python artifacts
+
+pycache/
+*.py[cod]
+*$py.class
+
+Chrome Profile & Drivers
+
+chrome_profile/
+drivers/
+webdriver/
+
+Debug files (Ảnh chụp màn hình, HTML lỗi)
+
+debug_.png
+debug_.html
+
+Environment variables
+
+.env
+
+Virtual Environment
+
+venv/
+env/
