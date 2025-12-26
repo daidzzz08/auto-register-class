@@ -2,7 +2,7 @@ name: Auto Registration Handler
 
 on:
   repository_dispatch:
-    types: [trigger_registration] # Tên sự kiện mà Repo A sẽ bắn sang
+    types: [trigger_registration]
 
 jobs:
   register:
@@ -23,12 +23,17 @@ jobs:
 
     - name: Run Auto-Reg Script
       env:
-        # Nhận dữ liệu từ payload mà Repo A gửi sang
+        # Nhận input từ Repo A gửi sang
         INPUT_UID: ${{ github.event.client_payload.uid }}
         INPUT_CLASS_CODE: ${{ github.event.client_payload.class_code }}
         INPUT_REG_CODE: ${{ github.event.client_payload.reg_code }}
+        INPUT_EMAIL: ${{ github.event.client_payload.email }} 
         
-        # Các bí mật cần thiết thiết lập trong Settings -> Secrets của Repo B
+        # Các bí mật
         FIREBASE_SECRET: ${{ secrets.FIREBASE_SECRET }}
         GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        
+        # Email Config (Mới)
+        EMAIL_USER: ${{ secrets.EMAIL_USER }}
+        EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
       run: python main.py
