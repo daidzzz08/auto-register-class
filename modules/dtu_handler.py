@@ -5,6 +5,8 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
+# Giả định file captcha.py nằm trong thư mục modules như cấu trúc cũ
+# Nếu bạn để cùng thư mục, hãy sửa thành: from captcha import solve_captcha_with_gemini
 from modules.captcha import solve_captcha_with_gemini
 
 # Link trang web
@@ -27,17 +29,19 @@ def save_debug_screenshot(driver, name):
 def login_mydtu(driver, username, password):
     log(f"🚀 LOGIN START: {username}")
     
-    # Retry load trang login nếu mạng chậm
-    for i in range(3):
+    # Retry load trang login nếu mạng chậm (tăng nhẹ lên 5 lần cho chắc chắn)
+    for i in range(5):
         try:
             driver.get(URL_LOGIN)
             break
         except Exception as e:
-            log(f"⚠️ Load timeout ({i+1}/3): {e}")
+            log(f"⚠️ Load timeout ({i+1}/5): {e}")
             time.sleep(3)
 
-    for attempt in range(1, 4):
-        log(f"⚡ Login Attempt {attempt}/3...")
+    # TĂNG SỐ LẦN RETRY LOGIN LÊN 10
+    max_login_retries = 10
+    for attempt in range(1, max_login_retries + 1):
+        log(f"⚡ Login Attempt {attempt}/{max_login_retries}...")
         try:
             # 1. Chờ form login xuất hiện
             try:
@@ -88,6 +92,8 @@ def login_mydtu(driver, username, password):
             else:
                 log("⚠️ Still on login page (Check password or captcha)")
                 save_debug_screenshot(driver, "login_failed")
+                # Nếu vẫn ở trang login, refresh để lấy captcha mới cho lần thử sau
+                driver.refresh()
                 
         except Exception as e:
             log(f"🔥 Login Exception: {e}")
@@ -99,8 +105,8 @@ def register_class(driver, class_code, reg_code):
     log(f"🚀 REGISTRATION START: Class {reg_code}")
     driver.get(URL_REGISTER)
     
-    # Retry Loop cho bước Đăng Ký (Max 5 lần)
-    max_retries = 5
+    # TĂNG SỐ LẦN RETRY ĐĂNG KÝ LÊN 10
+    max_retries = 10
     for attempt in range(1, max_retries + 1):
         log(f"\n⚡ Register Attempt {attempt}/{max_retries}...")
         
