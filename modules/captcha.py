@@ -14,7 +14,7 @@ def solve_captcha_with_gemini(base64_image):
         print("❌ Lỗi: Không tìm thấy GEMINI_API_KEY nào.")
         return None
 
-    models = ["gemini-2.5-flash-lite", "gemini-2.5-flash", "gemini-3-flash"]
+    models = ["gemini-2.5-flash-lite", "gemini-2.5-flash"]
     
     # Thử tối đa 3 lần với các key ngẫu nhiên
     for attempt in range(3):
