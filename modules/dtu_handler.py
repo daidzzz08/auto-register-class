@@ -7,7 +7,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
 # Giả định file captcha.py nằm trong thư mục modules như cấu trúc cũ
 # Nếu bạn để cùng thư mục, hãy sửa thành: from captcha import solve_captcha_with_gemini
-from captcha import solve_captcha_with_gemini
+from modules.captcha import solve_captcha_with_gemini
 
 # Link trang web
 URL_LOGIN = "https://mydtu.duytan.edu.vn/Signin.aspx"
