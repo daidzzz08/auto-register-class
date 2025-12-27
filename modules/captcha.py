@@ -16,6 +16,18 @@ def solve_captcha_with_gemini(base64_image):
 
     models = ["gemini-2.5-flash-lite", "gemini-2.5-flash"]
     
+    # CHIẾN LƯỢC 1: Prompt với các ràng buộc cứng (Strict Constraints)
+    # Định nghĩa rõ vai trò, nhiệm vụ và luật (đặc biệt là độ dài 4 ký tự)
+    PROMPT = """
+    CONTEXT: You are a strict CAPTCHA solving OCR engine.
+    TASK: Extract the text from the image.
+    CONSTRAINTS:
+    1. Output ONLY the text. No markdown, no explanations.
+    2. The text is EXACTLY 4 alphanumeric characters.
+    3. Uppercase only.
+    4. Ignore spaces.
+    """
+
     # Thử tối đa 3 lần với các key ngẫu nhiên
     for attempt in range(3):
         # Chọn ngẫu nhiên 1 key để sử dụng (Load Balancing)
@@ -23,7 +35,7 @@ def solve_captcha_with_gemini(base64_image):
         # Chọn ngẫu nhiên 1 model
         model = random.choice(models)
         
-        # Che giấu key trong log
+        # Che giấu key trong log để bảo mật
         masked_key = current_key[:5] + "..." + current_key[-3:]
         # print(f"   🤖 Using Key: {masked_key} | Model: {model}")
 
@@ -33,10 +45,16 @@ def solve_captcha_with_gemini(base64_image):
         data = {
             "contents": [{
                 "parts": [
-                    {"text": "OUTPUT: Text in image. Uppercase. Alphanumeric only. No spaces."},
+                    {"text": PROMPT},
                     {"inline_data": {"mime_type": "image/png", "data": base64_image}}
                 ]
-            }]
+            }],
+            # Cấu hình sinh nội dung (Generation Config) tối ưu cho Captcha
+            "generationConfig": {
+                "temperature": 0.0,       # Giảm độ sáng tạo xuống 0 để tăng độ chính xác tuyệt đối
+                "maxOutputTokens": 20,    # Giới hạn token đầu ra ngắn vì chỉ cần 4 ký tự
+                "topP": 1.0
+            }
         }
 
         try:
@@ -46,13 +64,19 @@ def solve_captcha_with_gemini(base64_image):
                 result = response.json()
                 if 'candidates' in result and result['candidates']:
                     content = result['candidates'][0]['content']['parts'][0]['text']
+                    
+                    # Xử lý hậu kỳ: Xóa khoảng trắng và chuyển về chữ hoa
                     clean_text = content.strip().replace(" ", "").upper()
+                    
+                    # Kiểm tra nhanh độ dài (nếu cần thiết có thể thêm logic retry ở đây nếu len != 4)
+                    if len(clean_text) != 4:
+                        print(f"⚠️ Cảnh báo: Kết quả '{clean_text}' có độ dài {len(clean_text)}, mong đợi 4.")
+
                     print(f"🤖 Gemini Decoded ({model}): {clean_text}")
                     return clean_text
                 
             elif response.status_code == 429:
                 print(f"⚠️ Key {masked_key} hết quota (429). Đổi key khác...")
-                # Nếu list còn nhiều key, có thể remove key lỗi tạm thời (logic phức tạp hơn)
                 time.sleep(1)
                 continue # Thử lại với key khác ở vòng lặp sau
                 
